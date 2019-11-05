@@ -1,8 +1,9 @@
+
 const router = require("express").Router();
 const booksController = require("../../controllers/booksController");
 const axios = require("axios");
 
-const APIKey = "AIzaSyA-R_utuiI0tiz3rhFPR_MQdxao0apJNvE";
+const APIKey = process.env.GOOGLE_KEY;
 
 router.route("/search")
   .get((req, res) => {
