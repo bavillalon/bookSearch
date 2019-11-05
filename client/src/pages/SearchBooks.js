@@ -20,6 +20,12 @@ class Search extends Component {
       .catch(err => console.log(err));
   };
 
+  addBook = event => {
+    console.log(event.target.value);
+      API.saveBook(JSON.parse(event.target.value))
+        .catch(err => console.log(err));
+  };
+
   handleInputChange = event => {
     const { name, value } = event.target;
     this.setState({
@@ -75,8 +81,20 @@ class Search extends Component {
                         {book.volumeInfo.title} by {book.volumeInfo.authors.join(", ")}
                       </h3>
                     </Link>
-                    <DeleteBtn onClick={() => this.deleteBook(book._id)} />
-
+                    <a href={book.volumeInfo.canonicalVolumeLink} target="#">
+                      <button className="btn btn-primary">
+                        View on Google
+                      </button>
+                    </a>
+                    <button className="btn btn-primary" onClick={this.addBook} value={JSON.stringify(
+                      {title:book.volumeInfo.title,
+                      authors:book.volumeInfo.authors,
+                      description:book.volumeInfo.description,
+                      thumbnail:book.volumeInfo.imageLinks.thumbnail,
+                      link: book.volumeInfo.canonicalVolumeLink,
+                      googleId:book.id})}>
+                        Add to Reading List
+                    </button>
                     <article>
                       <h5>Synopsis</h5>
                       <Row>
