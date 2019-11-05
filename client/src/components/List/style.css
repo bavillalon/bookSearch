@@ -16,9 +16,6 @@
   border-right: none;
 }
 
-.list-overflow-container li * {
-  cursor: pointer;
-}
 
 .list-overflow-container li a {
   color: #2A878C;
