@@ -1,11 +1,10 @@
 import React, { Component } from "react";
-import DeleteBtn from "../components/DeleteBtn";
 import Jumbotron from "../components/Jumbotron";
 import API from "../utils/API";
 import { Link } from "react-router-dom";
 import { Col, Row, Container } from "../components/Grid";
 import { List, ListItem } from "../components/List";
-import { Input, TextArea, FormBtn } from "../components/Form";
+import { Input, FormBtn } from "../components/Form";
 import Thumbnail from "../components/Thumbnail"
 
 class Search extends Component {
@@ -22,8 +21,12 @@ class Search extends Component {
 
   addBook = event => {
     console.log(event.target.value);
-      API.saveBook(JSON.parse(event.target.value))
-        .catch(err => console.log(err));
+    API.saveBook(this.state.books.filter((book) => (book.googleId===event.target.value)))
+    .then(response => {
+      console.log(response);
+      this.setState({books:this.state.books.filter(book => (response.data[0].googleId!=book.googleId))})
+    })
+      .catch(err => console.log(err));
   };
 
   handleInputChange = event => {
@@ -39,7 +42,16 @@ class Search extends Component {
       API.searchBook(this.state.title)
         .then(res => {
           console.log(res.data)
-          this.setState({ books: res.data })
+          this.setState({ books: res.data.map((book) => (
+            {
+              title: book.volumeInfo.title,
+              authors: book.volumeInfo.authors||["NA"],
+              description: book.volumeInfo.description||"No Description",
+              thumbnail: book.volumeInfo.imageLinks?book.volumeInfo.imageLinks.thumbnail:"https://placehold.it/300x300",
+              link: book.volumeInfo.canonicalVolumeLink,
+              googleId: book.id
+            }
+          )) })
         })
         .catch(err => console.log(err));
     }
@@ -47,9 +59,9 @@ class Search extends Component {
 
   render() {
     return (
-      <Container fluid>
+      <Container>
         <Row>
-          <Col size="md-6">
+          <Col size="12">
             <Jumbotron>
               <h1>Search for Book!</h1>
             </Jumbotron>
@@ -68,47 +80,40 @@ class Search extends Component {
               </FormBtn>
             </form>
           </Col>
-          <Col size="md-6 sm-12">
-            <Jumbotron>
-              <h1>Results</h1>
-            </Jumbotron>
+        </Row>
+        <Row>
+          <Col size="12">
             {this.state.books.length ? (
               <List>
                 {this.state.books.map(book => (
-                  <ListItem key={book.id}>
+                  <ListItem key={book.googleId}>
                     <Link to={"/books/" + book.id}>
                       <h3>
-                        {book.volumeInfo.title} by {book.volumeInfo.authors.join(", ")}
+                        {book.title} by {book.authors.join(", ")}
                       </h3>
                     </Link>
-                    <a href={book.volumeInfo.canonicalVolumeLink} target="#">
+                    <a href={book.link} target="#">
                       <button className="btn btn-primary">
                         View on Google
                       </button>
                     </a>
-                    <button className="btn btn-primary" onClick={this.addBook} value={JSON.stringify(
-                      {title:book.volumeInfo.title,
-                      authors:book.volumeInfo.authors,
-                      description:book.volumeInfo.description,
-                      thumbnail:book.volumeInfo.imageLinks.thumbnail,
-                      link: book.volumeInfo.canonicalVolumeLink,
-                      googleId:book.id})}>
-                        Add to Reading List
+                    <button className="btn btn-primary" onClick={this.addBook} value={book.googleId}>
+                      Add to Reading List
                     </button>
                     <article>
                       <h5>Synopsis</h5>
                       <Row>
                         <Col size="xs-4 sm-2">
-                          <Thumbnail src={book.volumeInfo.imageLinks.thumbnail} />
+                          <Thumbnail src={book.thumbnail} />
                         </Col>
                         <Col size="xs-8 sm-9">
                           <p>
-                            {book.volumeInfo.description}
+                            {book.description}
                           </p>
                         </Col>
                       </Row>
                     </article>
-
+                    
                   </ListItem>
                 ))}
               </List>
